@@ -1,3 +1,4 @@
+import io
 import fitz
 import pdfplumber
 from loguru import logger
@@ -5,16 +6,16 @@ import re
 
 
 class PDFProcessor:
-    def __init__(self, pdf_table_path: str, pdf_qrs_path: str):
+    def __init__(self, pdf_table_bytes: bytes, pdf_qrs_bytes: bytes):
         """
         Инициализация процессора для работы с PDF.
 
-        :param pdf_table_path: Путь к PDF файлу с таблицей.
-        :param pdf_qrs_path: Путь к PDF файлу с QR кодами.
+        :param pdf_table_bytes: PDF файл с таблицей в виде байтов.
+        :param pdf_qrs_bytes: PDF файл с QR кодами в виде байтов.
         """
-        self.pdf_table_path = pdf_table_path
-        self.pdf_qrs_path = pdf_qrs_path
-        self.qr_doc = fitz.open(pdf_qrs_path)
+        self.pdf_table_bytes = pdf_table_bytes
+        self.pdf_qrs_bytes = pdf_qrs_bytes
+        self.qr_doc = fitz.open(stream=self.pdf_qrs_bytes, filetype="pdf")
 
     def extract_numbers_from_qr(self) -> list[tuple[int, str]]:
         """
@@ -45,7 +46,7 @@ class PDFProcessor:
         :return: Список строк с найденными числами.
         """
         numbers_table = []
-        with pdfplumber.open(self.pdf_table_path) as pdf:
+        with pdfplumber.open(io.BytesIO(self.pdf_table_bytes)) as pdf:
             for page_num, page in enumerate(pdf.pages):
                 table = page.extract_table()
                 if table:
@@ -57,16 +58,14 @@ class PDFProcessor:
         return numbers_table
 
     def create_sorted_pdf(self,
-                          output_pdf_path: str,
                           table_codes: list[str],
-                          qr_codes: list[tuple[int, str]],
-                          ):
+                          qr_codes: list[tuple[int, str]]) -> bytes:
         """
         Создает новый PDF с QR кодами на основе исходного PDF, сортируя страницы в соответствующем порядке.
 
-        :param output_pdf_path: Путь для сохранения отсортированного PDF.
         :param table_codes: Список кодов из таблицы.
         :param qr_codes: Список кортежей с номерами страниц и числовыми кодами
+        :return: Отсортированный PDF в виде байтов.
         """
         output_doc = fitz.open()
 
@@ -80,5 +79,8 @@ class PDFProcessor:
             else:
                 logger.warning(f"Предупреждение: код {table_code} не найден в PDF с QR кодами")
 
-        output_doc.save(output_pdf_path)
+        output_pdf_bytes = io.BytesIO()
+        output_doc.save(output_pdf_bytes)
         output_doc.close()
+
+        return output_pdf_bytes.getvalue()
