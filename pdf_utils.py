@@ -80,7 +80,11 @@ class PDFProcessor:
                 logger.warning(f"Предупреждение: код {table_code} не найден в PDF с QR кодами")
 
         output_pdf_bytes = io.BytesIO()
-        output_doc.save(output_pdf_bytes)
+        output_doc.save(output_pdf_bytes,
+                        garbage=4,
+                        deflate=True,
+                        clean=True,
+                        linear=True)
         output_doc.close()
 
         return output_pdf_bytes.getvalue()
