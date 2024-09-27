@@ -31,11 +31,11 @@ def generate_sorted_pdf(table_pdf_bytes: bytes, qr_pdf_bytes: bytes) -> bytes:
 
 # Генерация отсортированного PDF файла
 # Пример использования
-with open('Лист подбора Ермак 20.09.24.pdf', 'rb') as table_file, open('Ермак 20.09.24.pdf', 'rb') as qr_file:
-    sorted_qr = generate_sorted_pdf(
-        table_file.read(),
-        qr_file.read(),
-    )
-
-with open('sorted.pdf', 'wb') as output_file:
-    output_file.write(sorted_qr)
+# with open('табличка.pdf', 'rb') as table_file, open('коды.pdf', 'rb') as qr_file:
+#     sorted_qr = generate_sorted_pdf(
+#         table_file.read(),
+#         qr_file.read(),
+#     )
+#
+# with open('sorted.pdf', 'wb') as output_file:
+#     output_file.write(sorted_qr)
